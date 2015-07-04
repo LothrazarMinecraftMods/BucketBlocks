@@ -17,7 +17,6 @@ public class ItemBlockBucket extends ItemBlock
 	@Override
 	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean par4)
 	{
-		
-		 list.add(BlockBucketStorage.getItemStackBucketNBT(itemstack)+"");
+		 list.add(BlockBucketStorage.getBucketsStored(itemstack)+"");
 	}
 }

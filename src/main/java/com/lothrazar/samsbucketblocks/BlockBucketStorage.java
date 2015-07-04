@@ -12,6 +12,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentTranslation;
@@ -39,10 +40,14 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 		 
 	}
 	public static final String NBTBUCKETS = "buckets";
-
+	public static int getBucketsStored(ItemStack item) 
+	{
+		if(item.getTagCompound()==null){item.setTagCompound(new NBTTagCompound());}
+		return item.getTagCompound().getInteger(NBTBUCKETS)+1;
+	} 
 	public static int getItemStackBucketNBT(ItemStack item) 
 	{
-		ModBlocks.setItemStackNotNull(item); 
+		if(item.getTagCompound()==null){item.setTagCompound(new NBTTagCompound());}
 		return item.getTagCompound().getInteger(NBTBUCKETS);
 	} 
 	@Override
@@ -145,8 +150,8 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 				event.world.setBlockState(event.pos, BlockRegistry.block_storeempty.getDefaultState());
 			}
 			event.world.updateComparatorOutputLevel(event.pos, blockClicked);
-			ModBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
-			ModBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
+			ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
+			ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
 		}
 		
 		if(event.action.LEFT_CLICK_BLOCK == event.action) //LEFT CLICK DEPOSIT INTO block		 
@@ -176,16 +181,16 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 					
 					event.world.updateComparatorOutputLevel(event.pos, blockClicked);
 					
-					ModBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
-					ModBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
+					ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
+					ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
 				}
 			}
 			else if(held != null &&  held.getItem() == block.bucketItem)
 			{  
 				addBucket(event.entityPlayer, event.world, container); 
 				event.world.updateComparatorOutputLevel(event.pos, blockClicked);
-				ModBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
-				ModBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face));  
+				ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
+				ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face));  
 			} 
 		} 
   	}
@@ -194,7 +199,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 	{ 
 		storage.removeBucket();
  
-		ModBlocks.dropItemStackInWorld(world, entityPlayer.getPosition(), new ItemStack(bucketItem)); 
+		ModBucketBlocks.dropItemStackInWorld(world, entityPlayer.getPosition(), new ItemStack(bucketItem)); 
 	}
 
 	public void addBucket(EntityPlayer entityPlayer,	World world, TileEntityBucketStorage storage) 
