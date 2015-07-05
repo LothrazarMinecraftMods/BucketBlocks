@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
@@ -15,8 +16,10 @@ public class ItemBlockBucket extends ItemBlock
 		super(block);
 	}
 	@Override
-	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean par4)
+	public void addInformation(ItemStack item, EntityPlayer player, List list, boolean par4)
 	{
-		 list.add(BlockBucketStorage.getBucketsStored(itemstack)+"");
+		if(item.getItem() != Item.getItemFromBlock(BlockRegistry.block_storeempty))
+			list.add(BlockBucketStorage.getBucketsStored(item)+"");
+		//else it is the Empty version
 	}
 }

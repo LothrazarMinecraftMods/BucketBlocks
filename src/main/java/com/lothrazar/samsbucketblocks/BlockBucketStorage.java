@@ -42,6 +42,9 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 	public static final String NBTBUCKETS = "buckets";
 	public static int getBucketsStored(ItemStack item) 
 	{
+		if(item.getItem() == Item.getItemFromBlock(BlockRegistry.block_storeempty))
+			return 0;
+		
 		if(item.getTagCompound()==null){item.setTagCompound(new NBTTagCompound());}
 		return item.getTagCompound().getInteger(NBTBUCKETS)+1;
 	} 
@@ -151,7 +154,10 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 			}
 			event.world.updateComparatorOutputLevel(event.pos, blockClicked);
 			ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
-			ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
+			
+			spawnMyParticle(event.world,block.bucketItem,event.pos.offset(event.face));
+			
+		
 		}
 		
 		if(event.action.LEFT_CLICK_BLOCK == event.action) //LEFT CLICK DEPOSIT INTO block		 
@@ -182,7 +188,9 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 					event.world.updateComparatorOutputLevel(event.pos, blockClicked);
 					
 					ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
-					ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face)); 
+					
+					spawnMyParticle(event.world,held.getItem(),event.pos.offset(event.face));
+					
 				}
 			}
 			else if(held != null &&  held.getItem() == block.bucketItem)
@@ -190,10 +198,22 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 				addBucket(event.entityPlayer, event.world, container); 
 				event.world.updateComparatorOutputLevel(event.pos, blockClicked);
 				ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in"); 
-				ModBucketBlocks.spawnParticle(event.world,EnumParticleTypes.LAVA, event.pos.offset(event.face));  
+				
+				spawnMyParticle(event.world,block.bucketItem,event.pos.offset(event.face));
+					
 			} 
 		} 
   	}
+	
+	private void spawnMyParticle(World world,Item item,BlockPos pos)
+	{ 
+		if(item == Items.milk_bucket)
+			ModBucketBlocks.spawnParticle(world,EnumParticleTypes.SNOW_SHOVEL, pos);
+		else if(item == Items.lava_bucket)
+			ModBucketBlocks.spawnParticle(world,EnumParticleTypes.LAVA, pos);
+		else if(item == Items.water_bucket)
+			ModBucketBlocks.spawnParticle(world,EnumParticleTypes.WATER_SPLASH, pos);
+	}
 
 	private void removeBucket(EntityPlayer entityPlayer,World world,TileEntityBucketStorage storage, Item bucketItem) 
 	{ 
@@ -206,7 +226,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 	{   
 		storage.addBucket();
 		
-		int b = storage.getBuckets();
+		//int b = storage.getBuckets();
 		 
 		entityPlayer.destroyCurrentEquippedItem();
 	}
