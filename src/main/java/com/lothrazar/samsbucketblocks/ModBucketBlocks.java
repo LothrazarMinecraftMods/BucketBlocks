@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,7 +15,6 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -35,7 +33,7 @@ public class ModBucketBlocks
 	@Instance(value = ModBucketBlocks.MODID)
 	public static ModBucketBlocks instance;
 	public static Logger logger; 
-	//public static ConfigRegistry cfg;
+
 	@SidedProxy(clientSide="com.lothrazar.samsbucketblocks.ClientProxy", serverSide="com.lothrazar.samsbucketblocks.CommonProxy")
 	public static CommonProxy proxy;  
 	public static CreativeTabs tabSamsContent = new CreativeTabs("tabSamsBuckets") 
@@ -51,8 +49,6 @@ public class ModBucketBlocks
 	public void onPreInit(FMLPreInitializationEvent event)
 	{ 
 		logger = event.getModLog();  
-		
-		//cfg = new ConfigRegistry(new Configuration(event.getSuggestedConfigurationFile()));
 
 		BlockRegistry.registerBlocks();
 	 
@@ -65,11 +61,10 @@ public class ModBucketBlocks
 		handlers.add(BlockRegistry.block_storeempty   );   
 
      	for(Object h : handlers)
-     		if(h != null)
-	     	{ 
-	    		FMLCommonHandler.instance().bus().register(h); 
-	    		MinecraftForge.EVENT_BUS.register(h); 
-	     	} 
+     	{ 
+    		FMLCommonHandler.instance().bus().register(h); 
+    		MinecraftForge.EVENT_BUS.register(h); 
+     	} 
 	}
     @EventHandler
     public void init(FMLInitializationEvent event)
@@ -102,6 +97,7 @@ public class ModBucketBlocks
 		if(item.getTagCompound() == null) {item.setTagCompound(new NBTTagCompound());}
 		item.getTagCompound().setInteger(prop, value);
 	} 
+	
 	public static EntityItem dropItemStackInWorld(World worldObj, BlockPos pos, ItemStack stack)
 	{
 		EntityItem entityItem = new EntityItem(worldObj, pos.getX(),pos.getY(),pos.getZ(), stack); 
@@ -117,11 +113,13 @@ public class ModBucketBlocks
 	{ 
 		player.worldObj.playSoundAtEntity(player, sound, 1.0F, 1.0F);
 	}
+	
 	public static void spawnParticle(World world, EnumParticleTypes type, BlockPos pos)
 	{
 		if(pos != null)
 			spawnParticle(world,type,pos.getX(),pos.getY(),pos.getZ());
     }	
+	
 	public static void spawnParticle(World world, EnumParticleTypes type, double x, double y, double z)
 	{ 
 		//http://www.minecraftforge.net/forum/index.php?topic=9744.0
@@ -130,6 +128,4 @@ public class ModBucketBlocks
 			world.spawnParticle(type, x + (world.rand.nextDouble() - 0.5D) * (double)0.8, y + world.rand.nextDouble() * (double)1.5 - (double)0.1, z + (world.rand.nextDouble() - 0.5D) * (double)0.8, 0.0D, 0.0D, 0.0D);
 		} 
     }
-	
-	
 }

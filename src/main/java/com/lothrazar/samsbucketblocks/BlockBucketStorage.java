@@ -32,8 +32,8 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 	public BlockBucketStorage(Item bucketIn) 
 	{
 		super(Material.iron);
-		this.setHardness(5F);//TODO: maybe increased hardness? non breakable by hand?
-		this.setResistance(5F); 
+		this.setHardness(7F);
+		this.setResistance(7F); 
 		this.setStepSound(soundTypeMetal);
 		this.setHarvestLevel("pickaxe", 1);
 		bucketItem = bucketIn;  
