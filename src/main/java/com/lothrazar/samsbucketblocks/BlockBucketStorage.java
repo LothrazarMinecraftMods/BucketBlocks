@@ -234,12 +234,11 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 	public void addRecipe() 
 	{
 		GameRegistry.addRecipe(new ItemStack(BlockRegistry.block_storeempty), 
-				"ioi", 
-				"ogo", 
-				"ioi", 
+				"i i", 
+				" o ", 
+				"i i", 
 				'o', Blocks.obsidian, 
-				'i', Items.iron_ingot,
-				'g', Blocks.glass ); 
+				'i', Blocks.iron_block); 
 		
 		//the filled ones are not crafted, only obtained when filled and then harvested
 	}
