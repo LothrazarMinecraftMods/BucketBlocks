@@ -1,7 +1,9 @@
 package com.lothrazar.samsbucketblocks;
 
 import java.util.ArrayList; 
+
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.GameRegistry; 
@@ -50,7 +52,7 @@ public class BlockRegistry
 		GameRegistry.registerTileEntity(TileEntityBucketStorage.class, ModBucketBlocks.MODID);
 	
 		BlockRegistry.block_storeempty = new BlockBucketStorage(null); //null for emtpy, no liquids stored inside
-		BlockRegistry.block_storeempty.setCreativeTab(ModBucketBlocks.tabSamsContent); 
+		BlockRegistry.block_storeempty.setCreativeTab(CreativeTabs.tabMisc); 
 		registerBucketBlock(BlockRegistry.block_storeempty, "block_storeempty");
 		
 		BlockRegistry.block_storeempty.addRecipe();

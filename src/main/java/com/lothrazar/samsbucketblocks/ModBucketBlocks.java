@@ -36,15 +36,7 @@ public class ModBucketBlocks
 
 	@SidedProxy(clientSide="com.lothrazar.samsbucketblocks.ClientProxy", serverSide="com.lothrazar.samsbucketblocks.CommonProxy")
 	public static CommonProxy proxy;  
-	public static CreativeTabs tabSamsContent = new CreativeTabs("tabSamsBuckets") 
-	{ 
-		@Override
-		public Item getTabIconItem() 
-		{ 
-			return Item.getItemFromBlock(BlockRegistry.block_storeempty);
-		}
-	};    
-    
+   
 	@EventHandler
 	public void onPreInit(FMLPreInitializationEvent event)
 	{ 
