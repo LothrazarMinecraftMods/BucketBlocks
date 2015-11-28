@@ -23,7 +23,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod(modid = ModBucketBlocks.MODID, useMetadata=true)
+@Mod(modid = ModBucketBlocks.MODID, useMetadata=true
+,updateJSON="https://raw.githubusercontent.com/LothrazarMinecraftMods/BucketBlocks/master/update.json")
 public class ModBucketBlocks
 {
     public static final String MODID = "samsbucketblocks";
