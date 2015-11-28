@@ -2,7 +2,7 @@
     "modid": "samsbucketblocks",
     "name": "Bucket Storage",
     "description": "Stores milk, lava, and water buckets (not just the liquid, the bucket too).  Does not work with other modded liquid, tanks, or pipes like buildcraft, this is intended for a more vanilla feel.  Just hit the block to add or remove.",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "mcversion": "1.8.8",
     "url": "http://www.curse.com/mc-mods/minecraft/232438-bucket-storage-blocks",
     "updateUrl": "http://www.curse.com/mc-mods/minecraft/232438-bucket-storage-blocks",
