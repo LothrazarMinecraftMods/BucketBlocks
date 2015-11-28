@@ -4,10 +4,8 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -53,8 +51,7 @@ public class ModBucketBlocks
 		handlers.add(BlockRegistry.block_storeempty   );   
 
      	for(Object h : handlers)
-     	{ 
-    		FMLCommonHandler.instance().bus().register(h); 
+     	{  
     		MinecraftForge.EVENT_BUS.register(h); 
      	} 
 	}

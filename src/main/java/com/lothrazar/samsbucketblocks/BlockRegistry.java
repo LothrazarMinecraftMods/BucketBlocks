@@ -4,11 +4,9 @@ import java.util.ArrayList;
 
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import net.minecraft.init.Items; 
 import net.minecraftforge.fml.common.registry.GameRegistry; 
- 
-
+  
 public class BlockRegistry 
 {  
 

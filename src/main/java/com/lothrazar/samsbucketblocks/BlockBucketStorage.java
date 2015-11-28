@@ -20,6 +20,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -124,7 +125,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 		
 		TileEntityBucketStorage container = (TileEntityBucketStorage)event.world.getTileEntity(event.pos);
  
-		if(event.entityPlayer.isSneaking() && event.action.LEFT_CLICK_BLOCK == event.action
+		if(event.entityPlayer.isSneaking() && Action.LEFT_CLICK_BLOCK == event.action
 				&& this.bucketItem == null)
 		{
 			int inside;
@@ -139,7 +140,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 		
 		if(event.entityPlayer.isSneaking()) {return;}//consistent
 		 
-		if(held == null && event.action.RIGHT_CLICK_BLOCK == event.action //RIGHT CLICK REMOVE from block
+		if(held == null && Action.RIGHT_CLICK_BLOCK == event.action //RIGHT CLICK REMOVE from block
 				&& block.bucketItem  != null
 				&& block.bucketItem ==  this.bucketItem)  
 		{ 
@@ -160,7 +161,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider
 		
 		}
 		
-		if(event.action.LEFT_CLICK_BLOCK == event.action) //LEFT CLICK DEPOSIT INTO block		 
+		if(Action.LEFT_CLICK_BLOCK == event.action) //LEFT CLICK DEPOSIT INTO block		 
 		{    
 			//before we add the bucket, wait and should we set the block first?
 			if(blockClicked == BlockRegistry.block_storeempty && block.bucketItem == null && held != null)	//then set this block based on bucket
