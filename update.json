@@ -4,7 +4,9 @@
     "1.8-latest": "1.0.0",
     "1.8-recommended": "1.0.0",
     "1.8.8-latest": "1.0.1",
-    "1.8.8-recommended": "1.0.1"
+    "1.8.8-recommended": "1.0.1",
+    "1.8.9-latest": "1.0.1",
+    "1.8.9-recommended": "1.0.1"
   },
   "1.8.8":{
     "1.0.1" : "Updated to 1.8.8 and cleaned up some old code."
