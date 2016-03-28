@@ -1,6 +1,5 @@
 package com.lothrazar.samsbucketblocks;
 
-import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -37,9 +36,11 @@ public class ModBucketBlocks {
 
 		BlockRegistry.registerBlocks();
 
-		ArrayList<Object> handlers = new ArrayList<Object>();
+		//ArrayList<Object> handlers = new ArrayList<Object>();
 
-		handlers.add(instance);
+		
+		MinecraftForge.EVENT_BUS.register(instance);
+		/*
 		handlers.add(BlockRegistry.block_storelava);// TODO: why are these four
 													// done so weirdly
 		handlers.add(BlockRegistry.block_storewater);
@@ -49,6 +50,7 @@ public class ModBucketBlocks {
 		for (Object h : handlers) {
 			MinecraftForge.EVENT_BUS.register(h);
 		}
+		*/
 	}
 
 	@EventHandler

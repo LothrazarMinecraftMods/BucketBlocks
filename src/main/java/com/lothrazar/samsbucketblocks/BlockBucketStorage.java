@@ -23,17 +23,16 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockBucketStorage extends Block implements ITileEntityProvider {
+public class BlockBucketStorage extends Block implements ITileEntityProvider{
+
 	private Item bucketItem;
 
-	public BlockBucketStorage(Item bucketIn) {
+	public BlockBucketStorage(Item bucketIn){
+
 		super(Material.iron);
 		this.setHardness(7F);
 		this.setResistance(7F);
@@ -44,26 +43,29 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 
 	public static final String NBTBUCKETS = "buckets";
 
-	public static int getBucketsStored(ItemStack item) {
-		if (item.getItem() == Item.getItemFromBlock(BlockRegistry.block_storeempty))
+	public static int getBucketsStored(ItemStack item){
+
+		if(item.getItem() == Item.getItemFromBlock(BlockRegistry.block_storeempty))
 			return 0;
 
-		if (item.getTagCompound() == null) {
+		if(item.getTagCompound() == null){
 			item.setTagCompound(new NBTTagCompound());
 		}
 		return item.getTagCompound().getInteger(NBTBUCKETS) + 1;
 	}
 
-	public static int getItemStackBucketNBT(ItemStack item) {
-		if (item.getTagCompound() == null) {
+	public static int getItemStackBucketNBT(ItemStack item){
+
+		if(item.getTagCompound() == null){
 			item.setTagCompound(new NBTTagCompound());
 		}
 		return item.getTagCompound().getInteger(NBTBUCKETS);
 	}
 
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		if (stack.getTagCompound() != null) {
+	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack){
+
+		if(stack.getTagCompound() != null){
 			int b = BlockBucketStorage.getItemStackBucketNBT(stack);
 
 			TileEntityBucketStorage container = (TileEntityBucketStorage) worldIn.getTileEntity(pos);
@@ -73,66 +75,107 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 	}
 
 	// http://www.minecraftforge.net/forum/index.php?topic=18754.0
-    public boolean isFullyOpaque(IBlockState state)
-    {
-        return true;//state.getMaterial().isOpaque() && state.isFullCube();
-    }
+	public boolean isFullyOpaque(IBlockState state){
+
+		return true;// state.getMaterial().isOpaque() && state.isFullCube();
+	}
+
 	/*
-	@Override
-	public boolean isOpaqueCube() {
-		return false;// transparency
-	}*/
+	 * @Override public boolean isOpaqueCube() { return false;// transparency }
+	 */
 
 	@Override
-	public boolean hasComparatorInputOverride(IBlockState state) {
-		return true; 
+	public boolean hasComparatorInputOverride(IBlockState state){
+
+		return true;
 	}
 
 	@Override
-	public int getComparatorInputOverride(IBlockState blockState,World world, BlockPos pos) {
+	public int getComparatorInputOverride(IBlockState blockState, World world, BlockPos pos){
+
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 		return container.getBuckets();
 	}
 
 	@SideOnly(Side.CLIENT)
-	public BlockRenderLayer getBlockLayer() {
-		return BlockRenderLayer.CUTOUT;//EnumWorldBlockLayer.CUTOUT;
+	public BlockRenderLayer getBlockLayer(){
+
+		return BlockRenderLayer.CUTOUT;// EnumWorldBlockLayer.CUTOUT;
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createNewTileEntity(World worldIn, int meta){
+
 		return new TileEntityBucketStorage(meta);
 	}
 
 	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+	public Item getItemDropped(IBlockState state, Random rand, int fortune){
+
 		return null;
 		// return Item.getItemFromBlock(BlockRegistry.block_storeempty);
 	}
-
-	@SubscribeEvent
-	public void onPlayerInteract(PlayerInteractEvent event) {
-		EntityPlayer entityPlayer = event.getEntityPlayer();
-		BlockPos pos = event.getPos();
-		World world = event.getWorld();
-		EnumFacing face = event.getFace();
-		EnumHand hand = entityPlayer.getActiveHand();
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer entityPlayer, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ)
+    {
+		if(world.isRemote == false){System.out.println("Server.Right");}
 		ItemStack held = entityPlayer.getHeldItem(hand);
+		
+		Block blockClicked = state.getBlock();
+		if((blockClicked instanceof BlockBucketStorage) == false){
+			return false;
+		}
+		BlockBucketStorage block = (BlockBucketStorage) blockClicked;
+		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
+		
+		if(held == null && block.bucketItem != null && block.bucketItem == this.bucketItem){
 
-		if (pos == null) {
+			if(world.isRemote == false){
+				//server only
+				System.out.println("remove Bucket because empty hand"+world.isRemote);
+				if(container.getBuckets() > 0){
+					removeBucket(entityPlayer, world, container, block.bucketItem);
+				}
+				else{
+					// it is also empty
+					removeBucket(entityPlayer, world, container, block.bucketItem);
+					world.setBlockState(pos, BlockRegistry.block_storeempty.getDefaultState());
+				}
+
+				world.updateComparatorOutputLevel(pos, blockClicked);
+			}
+			//both sides
+			world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
+			spawnMyParticle(world, block.bucketItem, pos);// .offset(face)
+
+		}
+	
+        return super.onBlockActivated(world, pos, state, entityPlayer, hand, heldItem, side, hitX, hitY, hitZ);
+    }
+	@Override
+	public void onBlockClicked(World world, BlockPos pos, EntityPlayer entityPlayer){
+
+		// only left click
+		if(world.isRemote == false){System.out.println("Server.Left");}
+		
+		EnumHand hand = entityPlayer.getActiveHand();
+		if(hand == null){
+			hand = EnumHand.MAIN_HAND;
+		}
+		ItemStack held = entityPlayer.getHeldItem(hand);
+		if(pos == null || held == null){
 			return;
 		}
 		IBlockState bstate = world.getBlockState(pos);
-		if (bstate == null) {
+		if(bstate == null){
 			return;
 		}
 
 		Block blockClicked = bstate.getBlock();
 
-		if (blockClicked == null || blockClicked == Blocks.air) {
+		if(blockClicked == null || blockClicked == Blocks.air){
 			return;
 		}
-		if ((blockClicked instanceof BlockBucketStorage) == false) {
+		if((blockClicked instanceof BlockBucketStorage) == false){
 			return;
 		}
 
@@ -140,9 +183,9 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 
-		if (entityPlayer.isSneaking() && Action.LEFT_CLICK_BLOCK == event.getAction() && this.bucketItem == null) {
+		if(entityPlayer.isSneaking() && this.bucketItem == null){
 			int inside;
-			if (blockClicked == BlockRegistry.block_storeempty)
+			if(blockClicked == BlockRegistry.block_storeempty)
 				inside = 0;
 			else
 				inside = container.getBuckets() + 1;// yess its messed up?
@@ -151,100 +194,99 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 			return;// no sounds just tell us how much
 		}
 
-		if (entityPlayer.isSneaking()) {
-			return;
-		}// consistent
+ 
+		// before we add the bucket, wait and should we set the block first?
+		if(blockClicked == BlockRegistry.block_storeempty && block.bucketItem == null){
+			IBlockState state = null;
 
-		if (held == null && Action.RIGHT_CLICK_BLOCK == event.getAction()
-				&& block.bucketItem != null && block.bucketItem == this.bucketItem) {
-			if (container.getBuckets() > 0) {
-				removeBucket(entityPlayer, world, container, block.bucketItem);
+			if(held.getItem() == Items.lava_bucket){
+				state = BlockRegistry.block_storelava.getDefaultState();
 			}
-			else // it is also empty
-			{
-				removeBucket(entityPlayer, world, container, block.bucketItem);
-				world.setBlockState(pos, BlockRegistry.block_storeempty.getDefaultState());
+			else if(held.getItem() == Items.water_bucket){
+				state = BlockRegistry.block_storewater.getDefaultState();
 			}
-			world.updateComparatorOutputLevel(pos, blockClicked);
-			//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
-			world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
-			spawnMyParticle(world, block.bucketItem, pos.offset(face));
+			if(held.getItem() == Items.milk_bucket){
+				state = BlockRegistry.block_storemilk.getDefaultState();
+			}
 
-		}
-
-		if (Action.LEFT_CLICK_BLOCK == event.getAction()) // LEFT CLICK DEPOSIT INTO
-														// block
-		{
-			// before we add the bucket, wait and should we set the block first?
-			if (blockClicked == BlockRegistry.block_storeempty && block.bucketItem == null && held != null) // then
-																											// set
-																											// this
-																											// block
-																											// based
-																											// on
-																											// bucket
-			{
-				IBlockState state = null;
-
-				if (held.getItem() == Items.lava_bucket) {
-					state = BlockRegistry.block_storelava.getDefaultState();
-				}
-				else if (held.getItem() == Items.water_bucket) {
-					state = BlockRegistry.block_storewater.getDefaultState();
-				}
-				if (held.getItem() == Items.milk_bucket) {
-					state = BlockRegistry.block_storemilk.getDefaultState();
-				}
-
-				if (state != null) {
+			if(state != null){
+				
+				if(world.isRemote == false){
+					System.out.println("addBucket to EMPTY BLOCK");
+					//server only
 					world.setBlockState(pos, state);
 					container.addBucket();
-					//entityPlayer.destroyCurrentEquippedItem();
+					// entityPlayer.destroyCurrentEquippedItem();
 					entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
 
 					world.updateComparatorOutputLevel(pos, blockClicked);
-
-					//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
-					world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
-
-					spawnMyParticle(world, held.getItem(), pos.offset(face));
-
 				}
-			}
-			else if (held != null && held.getItem() == block.bucketItem) {
+				//both sides
+				world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
 
-				//public void addBucket(EntityPlayer entityPlayer, World world, TileEntityBucketStorage storage) {
-				container.addBucket();
-				//entityPlayer.destroyCurrentEquippedItem();
-				entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
+				spawnMyParticle(world, held.getItem(), pos);// .offset(face)
+			}
 			
-				world.updateComparatorOutputLevel(pos, blockClicked);
-				//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
-				world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
-
-
-				spawnMyParticle(world, block.bucketItem, pos.offset(face));
-
-			}
+			return;
 		}
+		else if(held != null && held.getItem() == block.bucketItem){
+
+
+			if(world.isRemote == false){
+				System.out.println("addBucket to EXISTING BLOCK"+world.isRemote);
+				//server only
+				container.addBucket();
+				// entityPlayer.destroyCurrentEquippedItem();
+				entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
+
+				world.updateComparatorOutputLevel(pos, blockClicked);
+			}
+
+			//both sides
+			world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
+
+			spawnMyParticle(world, block.bucketItem, pos);// .offset(face)
+			return;
+		} 
+		
+		super.onBlockClicked(world, pos, entityPlayer);
 	}
 
-	private void spawnMyParticle(World world, Item item, BlockPos pos) {
-		if (item == Items.milk_bucket)
+	/*
+	 * @SubscribeEvent public void onPlayerInteract(PlayerInteractEvent event) { EntityPlayer
+	 * entityPlayer = event.getEntityPlayer(); BlockPos pos = event.getPos(); World world =
+	 * event.getWorld(); EnumFacing face = event.getFace(); EnumHand hand =
+	 * entityPlayer.getActiveHand(); ItemStack held = entityPlayer.getHeldItem(hand);
+	 * 
+	 * if (pos == null) { return; } IBlockState bstate = world.getBlockState(pos); if (bstate ==
+	 * null) { return; }
+	 * 
+	 * Block blockClicked = bstate.getBlock();
+	 * 
+	 * if (blockClicked == null || blockClicked == Blocks.air) { return; } if ((blockClicked
+	 * instanceof BlockBucketStorage) == false) { return; }
+	 * 
+	 * }
+	 */
+	private void spawnMyParticle(World world, Item item, BlockPos pos){
+
+		if(item == Items.milk_bucket)
 			ModBucketBlocks.spawnParticle(world, EnumParticleTypes.SNOW_SHOVEL, pos);
-		else if (item == Items.lava_bucket)
+		else if(item == Items.lava_bucket)
 			ModBucketBlocks.spawnParticle(world, EnumParticleTypes.LAVA, pos);
-		else if (item == Items.water_bucket)
+		else if(item == Items.water_bucket)
 			ModBucketBlocks.spawnParticle(world, EnumParticleTypes.WATER_SPLASH, pos);
 	}
 
-	private void removeBucket(EntityPlayer entityPlayer, World world, TileEntityBucketStorage storage, Item bucketItem) {
+	private void removeBucket(EntityPlayer entityPlayer, World world, TileEntityBucketStorage storage, Item bucketItem){
+
 		storage.removeBucket();
 
 		ModBucketBlocks.dropItemStackInWorld(world, entityPlayer.getPosition(), new ItemStack(bucketItem));
 	}
 
-	public void addRecipe() {
+	public void addRecipe(){
+
 		GameRegistry.addRecipe(new ItemStack(BlockRegistry.block_storeempty), "i i", " o ", "i i", 'o', Blocks.obsidian, 'i', Blocks.iron_block);
 
 		// the filled ones are not crafted, only obtained when filled and then
