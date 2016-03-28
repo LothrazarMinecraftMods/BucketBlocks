@@ -2,13 +2,13 @@ package com.lothrazar.samsbucketblocks;
 
 import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.entity.Entity;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.tileentity.TileEntity; 
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -58,18 +58,21 @@ public class ModBucketBlocks {
 
 	@SubscribeEvent
 	public void onBreakEvent(BreakEvent event) {
-		TileEntity ent = event.world.getTileEntity(event.pos);
+		World world = event.getWorld();
+		BlockPos pos = event.getPos();
+		IBlockState state = event.getState();
+		TileEntity ent = world.getTileEntity(pos);
 
 		// TODO; check tool/pickaxe? if notHarvestable or whatever, drop the
 		// buckets and the ..glass?
 
 		if (ent != null && ent instanceof TileEntityBucketStorage) {
 			TileEntityBucketStorage t = (TileEntityBucketStorage) ent;
-			ItemStack stack = new ItemStack(event.state.getBlock());
+			ItemStack stack = new ItemStack(state.getBlock());
 
 			setItemStackNBT(stack, BlockBucketStorage.NBTBUCKETS, t.getBuckets());
 
-			dropItemStackInWorld(event.world, event.pos, stack);
+			dropItemStackInWorld(world, pos, stack);
 
 			t.setBuckets(0);
 		}
@@ -92,11 +95,12 @@ public class ModBucketBlocks {
 		}
 		return entityItem;
 	}
-
-	public static void playSoundAt(Entity player, String sound) {
-		player.worldObj.playSoundAtEntity(player, sound, 1.0F, 1.0F);
+/*
+	public static void playSoundAt(Entity ent, String sound) {
+		BlockPos pos = ent.getPosition();
+		ent.worldObj.playSound(pos.getX(), pos.getY(), pos.getZ(), sound, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
 	}
-
+*/
 	public static void spawnParticle(World world, EnumParticleTypes type, BlockPos pos) {
 		if (pos != null)
 			spawnParticle(world, type, pos.getX(), pos.getY(), pos.getZ());

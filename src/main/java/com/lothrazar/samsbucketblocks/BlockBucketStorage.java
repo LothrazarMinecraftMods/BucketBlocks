@@ -3,20 +3,25 @@ package com.lothrazar.samsbucketblocks;
 import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
@@ -32,7 +37,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 		super(Material.iron);
 		this.setHardness(7F);
 		this.setResistance(7F);
-		this.setStepSound(soundTypeMetal);
+		this.setStepSound(SoundType.METAL);
 		this.setHarvestLevel("pickaxe", 1);
 		bucketItem = bucketIn;
 	}
@@ -68,27 +73,30 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 	}
 
 	// http://www.minecraftforge.net/forum/index.php?topic=18754.0
-
+    public boolean isFullyOpaque(IBlockState state)
+    {
+        return true;//state.getMaterial().isOpaque() && state.isFullCube();
+    }
+	/*
 	@Override
 	public boolean isOpaqueCube() {
 		return false;// transparency
+	}*/
+
+	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true; 
 	}
 
 	@Override
-	public boolean hasComparatorInputOverride() {
-		return true; // allows it to emit redstone power directly to comp. in
-						// following function
-	}
-
-	@Override
-	public int getComparatorInputOverride(World world, BlockPos pos) {
+	public int getComparatorInputOverride(IBlockState blockState,World world, BlockPos pos) {
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 		return container.getBuckets();
 	}
 
 	@SideOnly(Side.CLIENT)
-	public EnumWorldBlockLayer getBlockLayer() {
-		return EnumWorldBlockLayer.CUTOUT;
+	public BlockRenderLayer getBlockLayer() {
+		return BlockRenderLayer.CUTOUT;//EnumWorldBlockLayer.CUTOUT;
 	}
 
 	@Override
@@ -104,12 +112,17 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 
 	@SubscribeEvent
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		ItemStack held = event.entityPlayer.getCurrentEquippedItem();
+		EntityPlayer entityPlayer = event.getEntityPlayer();
+		BlockPos pos = event.getPos();
+		World world = event.getWorld();
+		EnumFacing face = event.getFace();
+		EnumHand hand = entityPlayer.getActiveHand();
+		ItemStack held = entityPlayer.getHeldItem(hand);
 
-		if (event.pos == null) {
+		if (pos == null) {
 			return;
 		}
-		IBlockState bstate = event.entityPlayer.worldObj.getBlockState(event.pos);
+		IBlockState bstate = world.getBlockState(pos);
 		if (bstate == null) {
 			return;
 		}
@@ -125,45 +138,41 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 
 		BlockBucketStorage block = (BlockBucketStorage) blockClicked;
 
-		TileEntityBucketStorage container = (TileEntityBucketStorage) event.world.getTileEntity(event.pos);
+		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 
-		if (event.entityPlayer.isSneaking() && Action.LEFT_CLICK_BLOCK == event.action && this.bucketItem == null) {
+		if (entityPlayer.isSneaking() && Action.LEFT_CLICK_BLOCK == event.getAction() && this.bucketItem == null) {
 			int inside;
 			if (blockClicked == BlockRegistry.block_storeempty)
 				inside = 0;
 			else
 				inside = container.getBuckets() + 1;// yess its messed up?
-			event.entityPlayer.addChatMessage(new ChatComponentTranslation(inside + ""));
+			entityPlayer.addChatMessage(new TextComponentTranslation(inside + ""));
 
 			return;// no sounds just tell us how much
 		}
 
-		if (event.entityPlayer.isSneaking()) {
+		if (entityPlayer.isSneaking()) {
 			return;
 		}// consistent
 
-		if (held == null && Action.RIGHT_CLICK_BLOCK == event.action // RIGHT
-																		// CLICK
-																		// REMOVE
-																		// from
-																		// block
+		if (held == null && Action.RIGHT_CLICK_BLOCK == event.getAction()
 				&& block.bucketItem != null && block.bucketItem == this.bucketItem) {
 			if (container.getBuckets() > 0) {
-				removeBucket(event.entityPlayer, event.world, container, block.bucketItem);
+				removeBucket(entityPlayer, world, container, block.bucketItem);
 			}
 			else // it is also empty
 			{
-				removeBucket(event.entityPlayer, event.world, container, block.bucketItem);
-				event.world.setBlockState(event.pos, BlockRegistry.block_storeempty.getDefaultState());
+				removeBucket(entityPlayer, world, container, block.bucketItem);
+				world.setBlockState(pos, BlockRegistry.block_storeempty.getDefaultState());
 			}
-			event.world.updateComparatorOutputLevel(event.pos, blockClicked);
-			ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
-
-			spawnMyParticle(event.world, block.bucketItem, event.pos.offset(event.face));
+			world.updateComparatorOutputLevel(pos, blockClicked);
+			//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.out");
+			world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
+			spawnMyParticle(world, block.bucketItem, pos.offset(face));
 
 		}
 
-		if (Action.LEFT_CLICK_BLOCK == event.action) // LEFT CLICK DEPOSIT INTO
+		if (Action.LEFT_CLICK_BLOCK == event.getAction()) // LEFT CLICK DEPOSIT INTO
 														// block
 		{
 			// before we add the bucket, wait and should we set the block first?
@@ -188,23 +197,33 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 				}
 
 				if (state != null) {
-					event.world.setBlockState(event.pos, state);
-					addBucket(event.entityPlayer, event.world, container);
+					world.setBlockState(pos, state);
+					container.addBucket();
+					//entityPlayer.destroyCurrentEquippedItem();
+					entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
 
-					event.world.updateComparatorOutputLevel(event.pos, blockClicked);
+					world.updateComparatorOutputLevel(pos, blockClicked);
 
-					ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
+					//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
+					world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
 
-					spawnMyParticle(event.world, held.getItem(), event.pos.offset(event.face));
+					spawnMyParticle(world, held.getItem(), pos.offset(face));
 
 				}
 			}
 			else if (held != null && held.getItem() == block.bucketItem) {
-				addBucket(event.entityPlayer, event.world, container);
-				event.world.updateComparatorOutputLevel(event.pos, blockClicked);
-				ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
 
-				spawnMyParticle(event.world, block.bucketItem, event.pos.offset(event.face));
+				//public void addBucket(EntityPlayer entityPlayer, World world, TileEntityBucketStorage storage) {
+				container.addBucket();
+				//entityPlayer.destroyCurrentEquippedItem();
+				entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
+			
+				world.updateComparatorOutputLevel(pos, blockClicked);
+				//ModBucketBlocks.playSoundAt(event.entityPlayer, "tile.piston.in");
+				world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.block_piston_extend, SoundCategory.BLOCKS, 1.0F, 1.0F,false);
+
+
+				spawnMyParticle(world, block.bucketItem, pos.offset(face));
 
 			}
 		}
@@ -223,14 +242,6 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider {
 		storage.removeBucket();
 
 		ModBucketBlocks.dropItemStackInWorld(world, entityPlayer.getPosition(), new ItemStack(bucketItem));
-	}
-
-	public void addBucket(EntityPlayer entityPlayer, World world, TileEntityBucketStorage storage) {
-		storage.addBucket();
-
-		// int b = storage.getBuckets();
-
-		entityPlayer.destroyCurrentEquippedItem();
 	}
 
 	public void addRecipe() {
