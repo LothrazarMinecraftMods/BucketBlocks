@@ -100,7 +100,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 	@SideOnly(Side.CLIENT)
 	public BlockRenderLayer getBlockLayer(){
 
-		return BlockRenderLayer.CUTOUT;// EnumWorldBlockLayer.CUTOUT;
+		return BlockRenderLayer.CUTOUT_MIPPED;// EnumWorldBlockLayer.CUTOUT;
 	}
 
 	@Override
@@ -192,13 +192,13 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 
-		if(entityPlayer.isSneaking()){
+		if(entityPlayer.isSneaking() && world.isRemote == false){ 	//server has accurate number
 			int inside;
 			if(blockClicked == BlockRegistry.block_storeempty)
 				inside = 0;
 			else
 				inside = container.getBuckets() + 1;// yess its messed up?
-			
+			 
 			entityPlayer.addChatMessage(new TextComponentTranslation(inside + ""));
 
 			return;// no sounds just tell us how much
