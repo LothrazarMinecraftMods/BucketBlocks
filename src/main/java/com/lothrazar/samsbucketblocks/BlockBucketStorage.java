@@ -131,7 +131,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 
 			if(world.isRemote == false){
 				//server only
-				System.out.println("remove Bucket because empty hand"+world.isRemote);
+		
 				if(container.getBuckets() > 0){
 					removeBucket(entityPlayer, world, container, block.bucketItem);
 				}
@@ -162,7 +162,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 			hand = EnumHand.MAIN_HAND;
 		}
 		ItemStack held = entityPlayer.getHeldItem(hand);
-		if(pos == null || held == null){
+		if(pos == null){
 			return;
 		}
 		IBlockState bstate = world.getBlockState(pos);
@@ -183,17 +183,21 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
 
-		if(entityPlayer.isSneaking() && this.bucketItem == null){
+		if(entityPlayer.isSneaking()){
 			int inside;
 			if(blockClicked == BlockRegistry.block_storeempty)
 				inside = 0;
 			else
 				inside = container.getBuckets() + 1;// yess its messed up?
+			
 			entityPlayer.addChatMessage(new TextComponentTranslation(inside + ""));
 
 			return;// no sounds just tell us how much
 		}
 
+		if(held == null){
+			return;
+		}
  
 		// before we add the bucket, wait and should we set the block first?
 		if(blockClicked == BlockRegistry.block_storeempty && block.bucketItem == null){
