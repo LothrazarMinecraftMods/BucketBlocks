@@ -6,7 +6,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-public class BlockRegistry {
+public class BlockRegistry{
 
 	public static BlockBucketStorage block_storelava;
 	public static BlockBucketStorage block_storewater;
@@ -17,7 +17,8 @@ public class BlockRegistry {
 	// client proxy later
 	public static ArrayList<Block> blocks = new ArrayList<Block>();
 
-	public static void registerBlock(Block s, String name) {
+	public static void registerBlock(Block s, String name){
+
 		s.setUnlocalizedName(name);
 
 		GameRegistry.registerBlock(s, name);
@@ -25,7 +26,8 @@ public class BlockRegistry {
 		blocks.add(s);
 	}
 
-	public static void registerBucketBlock(Block s, String name) {
+	public static void registerBucketBlock(Block s, String name){
+
 		s.setUnlocalizedName(name);
 
 		GameRegistry.registerBlock(s, ItemBlockBucket.class, name);
@@ -33,7 +35,7 @@ public class BlockRegistry {
 		blocks.add(s);
 	}
 
-	public static void registerBlocks() {
+	public static void registerBlocks(){
 
 		BlockRegistry.block_storewater = new BlockBucketStorage(Items.water_bucket);
 		registerBucketBlock(BlockRegistry.block_storewater, "block_storewater");
