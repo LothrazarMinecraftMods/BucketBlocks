@@ -106,7 +106,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta){
 
-		return new TileEntityBucketStorage(meta);
+		return new TileEntityBucketStorage(worldIn,meta);
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 	}
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer entityPlayer, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ)
     {
-		if(world.isRemote == false){System.out.println("Server.Right");}
+		//if(world.isRemote == false){System.out.println("Server.Right");}
 		ItemStack held = entityPlayer.getHeldItem(hand);
 		
 		Block blockClicked = state.getBlock();
@@ -126,6 +126,12 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 		}
 		BlockBucketStorage block = (BlockBucketStorage) blockClicked;
 		TileEntityBucketStorage container = (TileEntityBucketStorage) world.getTileEntity(pos);
+		
+		long timeSince = world.getTotalWorldTime() -  container.getTimeLast();
+		if(timeSince < TileEntityBucketStorage.TIMEOUT){
+			//System.out.println("SKIP"+timeSince);
+			return false;
+		}
 		
 		if(held == null && block.bucketItem != null && block.bucketItem == this.bucketItem){
 
@@ -139,8 +145,11 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 					// it is also empty
 					removeBucket(entityPlayer, world, container, block.bucketItem);
 					world.setBlockState(pos, BlockRegistry.block_storeempty.getDefaultState());
+					
+					
 				}
 
+				container.setTimeLast(world.getTotalWorldTime());
 				world.updateComparatorOutputLevel(pos, blockClicked);
 			}
 			//both sides
@@ -155,7 +164,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 	public void onBlockClicked(World world, BlockPos pos, EntityPlayer entityPlayer){
 
 		// only left click
-		if(world.isRemote == false){System.out.println("Server.Left");}
+		//if(world.isRemote == false){System.out.println("Server.Left");}
 		
 		EnumHand hand = entityPlayer.getActiveHand();
 		if(hand == null){
@@ -216,7 +225,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 			if(state != null){
 				
 				if(world.isRemote == false){
-					System.out.println("addBucket to EMPTY BLOCK");
+					//System.out.println("addBucket to EMPTY BLOCK");
 					//server only
 					world.setBlockState(pos, state);
 					container.addBucket();
@@ -237,7 +246,7 @@ public class BlockBucketStorage extends Block implements ITileEntityProvider{
 
 
 			if(world.isRemote == false){
-				System.out.println("addBucket to EXISTING BLOCK"+world.isRemote);
+				//System.out.println("addBucket to EXISTING BLOCK"+world.isRemote);
 				//server only
 				container.addBucket();
 				// entityPlayer.destroyCurrentEquippedItem();
